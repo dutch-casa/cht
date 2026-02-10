@@ -9,11 +9,14 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		printUsage()
+		runFzf()
 		return
 	}
 
 	switch args[0] {
+	case "--help", "-h":
+		printUsage()
+		return
 	case "--completions":
 		printCompletions()
 		return
@@ -22,24 +25,6 @@ func main() {
 			fatal(err)
 		}
 		fmt.Println("Topic cache refreshed.")
-		return
-	case "-fzf":
-		if err := requireCmd("fzf"); err != nil {
-			fatal(err)
-		}
-		if err := requireCmd("bat"); err != nil {
-			fatal(err)
-		}
-		topic, err := fzfSelect()
-		if err != nil {
-			fatal(err)
-		}
-		if topic == "" {
-			return
-		}
-		if err := fetchAndDisplay(topic); err != nil {
-			fatal(err)
-		}
 		return
 	}
 
@@ -52,9 +37,28 @@ func main() {
 	}
 }
 
+func runFzf() {
+	if err := requireCmd("fzf"); err != nil {
+		fatal(err)
+	}
+	if err := requireCmd("bat"); err != nil {
+		fatal(err)
+	}
+	topic, err := fzfSelect()
+	if err != nil {
+		fatal(err)
+	}
+	if topic == "" {
+		return
+	}
+	if err := fetchAndDisplay(topic); err != nil {
+		fatal(err)
+	}
+}
+
 func printUsage() {
-	fmt.Fprintln(os.Stderr, `usage: cht <topic>         fetch cheat sheet
-       cht -fzf            fuzzy search topics
+	fmt.Fprintln(os.Stderr, `usage: cht                  fuzzy search topics (default)
+       cht <topic>          fetch cheat sheet
        cht --refresh        refresh topic cache
        cht --completions    print zsh completions`)
 }
